@@ -17,7 +17,7 @@ get '/feed' => sub {
     $rss->parse($xml);
 
     my @items = map { +{
-        title    => $_->{title},
+        title    => trim($_->{title}),
         url      => $_->{link},
     }} @{$rss->{items}};
     $self->stash(json => \@items);
@@ -38,3 +38,10 @@ get '/list' => sub {
 };
 
 app->start;
+
+sub trim {
+    my $text = shift;
+    $text =~ s/^\s+//g;
+    $text =~ s/\s+$//g;
+    return $text;
+}
