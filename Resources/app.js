@@ -175,34 +175,34 @@ function openWebWindow (row) {
 
 function facebookConnect (row) {
   var data = {
-		name: row.title,
-		href: row.url,
-		caption: "via RSSV",
-		description: "Trying the Facebook Connect API ",
+    name: row.title,
+    href: row.url,
+    caption: "via RSSV",
+    description: "Trying the Facebook Connect API ",
     /*
-		  media:[
-			{
-			type:"image",
-			src:"http://img.skitch.com/20091027-dick5esbjx9kg63rnfhtfgdre1.jpg",
-			href:"http://www.appcelerator.com"
-			}
-		  ],
+      media:[
+      {
+      type:"image",
+      src:"http://img.skitch.com/20091027-dick5esbjx9kg63rnfhtfgdre1.jpg",
+      href:"http://www.appcelerator.com"
+      }
+      ],
     */
-		properties:
-		{
-			"github":{
-				"text":"RSSV",
-				"href":"http://github.com/naoya/RSSV"
-			}
-		}
+    properties:
+    {
+      "github":{
+        "text":"RSSV",
+        "href":"http://github.com/naoya/RSSV"
+      }
+    }
   };
   Titanium.Facebook.publishStream("Comment",data, null, function(r) {
     Titanium.API.info("received publish stream response = "+JSON.stringify(r));
     /*
-		  if (r.success)
-			Ti.UI.createAlertDialog({title:'Facebook', message:'Your stream was published'}).show();
-		  else
-			Ti.UI.createAlertDialog({title:'Facebook', message:'Error: ' + r.error}).show();
+      if (r.success)
+      Ti.UI.createAlertDialog({title:'Facebook', message:'Your stream was published'}).show();
+      else
+      Ti.UI.createAlertDialog({title:'Facebook', message:'Error: ' + r.error}).show();
     */
-	});
+  });
 }
