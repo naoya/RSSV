@@ -59,7 +59,7 @@ function openItemsWindow (e) {
     var table = Titanium.UI.createTableView({ data : data.map(createItemRow) });
     win.add(table);
     table.addEventListener('click', function(e) {
-      openItemWindow(data[e.index]);
+      openWebWindow(data[e.index]);
     });
   };
   
@@ -116,30 +116,93 @@ function createItemRow (data) {
   return row;
 }
 
-function openItemWindow (row) {
+function openWebWindow (row) {
   var win = Ti.UI.createWindow();
-  var wv  = Ti.UI.createWebView();
+  var webview  = Ti.UI.createWebView();
   
-  var btnBack = Ti.UI.createButton({
-    title : '戻る'
+  var back = Ti.UI.createButton({
+    style : Ti.UI.iPhone.SystemButtonStyle.BORDERED,
+    title : 'Back',
+    font  : { fontSize: 14 }
   });
-  btnBack.addEventListener('click', function () { wv.goBack(); });
+  back.addEventListener('click', function () { webview.goBack(); });
   
-  var btnReload = Ti.UI.createButton({
+  var reload = Ti.UI.createButton({
     systemButton : Ti.UI.iPhone.SystemButton.REFRESH
   });
-  btnReload.addEventListener('click', function () { wv.reload(); });
+  reload.addEventListener('click', function () { webview.reload(); });
+
+  var spacer = Ti.UI.createButton({
+    systemButton : Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+  });
+
+  var facebook = Ti.UI.createButton({
+    title : 'Facebook',
+    style: Ti.UI.iPhone.SystemButtonStyle.DONE,
+    font : { fontSize: 14 }
+  });
+  facebook.addEventListener('click', function (e) {
+    if (Titanium.Facebook.isLoggedIn() == false) {
+      debug("need to login");
+      var login = Titanium.Facebook.createLoginButton({
+	      'style':'normal',
+	      'apikey':'9494e611f2a93b8d7bfcdfa8cefdaf9f',
+	      'sessionProxy':'http://api.appcelerator.net/p/fbconnect/',
+      });
+      var v = Ti.UI.createView({
+        width: 200,
+        height: 50,
+        backgroundColor: '#000',
+        borderColor: '#999',
+        borderRadius: 10.0,
+        borderWidth: 1.0,
+        opacity: 0.8
+      });
+      v.add(login);
+      win.add(v);
+    } else {
+      facebookConnect(row);
+    }
+  });
   
   win.title   = row.title;
-  /*
-  if (row.content)
-    wv.html = row.content;
-  else 
-    wv.url      = row.url;
-  */
-  wv.url = row.url;
-  win.toolbar = [ btnBack, btnReload ];
-  win.add(wv);
+  webview.url = row.url;
+  win.toolbar = [ back, reload, spacer, facebook ];
+  win.add(webview);
 
   nav.open(win, {animated : true});
+}
+
+function facebookConnect (row) {
+  var data = {
+		name: row.title,
+		href: row.url,
+		caption: "via RSSV",
+		description: "Trying the Facebook Connect API ",
+    /*
+		  media:[
+			{
+			type:"image",
+			src:"http://img.skitch.com/20091027-dick5esbjx9kg63rnfhtfgdre1.jpg",
+			href:"http://www.appcelerator.com"
+			}
+		  ],
+    */
+		properties:
+		{
+			"github":{
+				"text":"RSSV",
+				"href":"http://github.com/naoya/RSSV"
+			}
+		}
+  };
+  Titanium.Facebook.publishStream("Comment",data, null, function(r) {
+    Titanium.API.info("received publish stream response = "+JSON.stringify(r));
+    /*
+		  if (r.success)
+			Ti.UI.createAlertDialog({title:'Facebook', message:'Your stream was published'}).show();
+		  else
+			Ti.UI.createAlertDialog({title:'Facebook', message:'Error: ' + r.error}).show();
+    */
+	});
 }
