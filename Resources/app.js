@@ -89,12 +89,13 @@ function createItemRow (data) {
     font     : { fontSize: 14, fontWeight: 'bold' }
   });
 
-  /* うーん、落ちる
+  /* うーん、落ちる...
   var icon = Titanium.UI.createIMageView({
     image  : 'http://favicon.st-hatena.com/?url=' + data.url,
-    width  : 16,
-    height : 16,
-    left   : 2
+    width  : 18,
+    height : 18,
+    top: 0,
+    left: 0
   });
   */
   
@@ -108,7 +109,7 @@ function createItemRow (data) {
   });
       
   view.add(title);
-  // view.add(icon);
+  /* view.add(icon); */
   view.add(url);
   row.add(view);
   
@@ -130,7 +131,13 @@ function openItemWindow (row) {
   btnReload.addEventListener('click', function () { wv.reload(); });
   
   win.title   = row.title;
-  wv.url      = row.url;
+  /*
+  if (row.content)
+    wv.html = row.content;
+  else 
+    wv.url      = row.url;
+  */
+  wv.url = row.url;
   win.toolbar = [ btnBack, btnReload ];
   win.add(wv);
 

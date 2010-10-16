@@ -19,6 +19,7 @@ get '/feed' => sub {
     my @items = map { +{
         title    => trim($_->{title}),
         url      => $_->{link},
+        # content  => $_->{content}->{encoded},
     }} @{$rss->{items}};
     $self->stash(json => \@items);
 };
@@ -26,6 +27,14 @@ get '/feed' => sub {
 get '/list' => sub {
     my $self = shift;
     $self->stash(json => [
+        {
+            title => 'Appcelerator Developer Center',
+            url   => 'http://developer.appcelerator.com/blog/feed',
+        },
+        {
+            title => 'TechCrunch Japan',
+            url   => 'http://www.pheedo.jp/f/JapaneseTechCrunch'
+        },
         {
             title => 'naoyaのはてなダイアリー',
             url   => 'http://d.hatena.ne.jp/naoya/rss',
