@@ -5,6 +5,7 @@ function debug (msg) {
     }).show();
 }
 
+Titanium.include('js/Bookmark.js');
 Titanium.UI.setBackgroundColor('#000');
 
 var root = Titanium.UI.createWindow();
@@ -24,7 +25,7 @@ var loader = Titanium.Network.createHTTPClient();
 loader.open('GET', 'http://localhost:3000/list');
 loader.onload = function () {
   var data = JSON.parse(this.responseText);
-  data.forEach(function (v) { v.hasChild = true; });
+  data.forEach(function (v) {  v.hasChild = true; });
   var table = Titanium.UI.createTableView({ data : data });
   table.addEventListener('click', openItemsWindow);
   win.add(table);
@@ -81,35 +82,38 @@ function createItemRow (data) {
     left:   5
   });
 
+  var icon = Titanium.UI.createImageView({
+    image  : 'http://favicon.st-hatena.com/?url=' + data.url,
+    width  : 16,
+    height : 16,
+    top: 0,
+    left: 0
+  });
+
   var title = Titanium.UI.createLabel({
     text     : data.title,
     textAlign: 'left',
     height   : 36,
     color    : '#000',
+    left     : 20,
+    top      : -16,
+    bottom   : 2,
     font     : { fontSize: 14, fontWeight: 'bold' }
   });
-
-  /* うーん、落ちる...
-  var icon = Titanium.UI.createIMageView({
-    image  : 'http://favicon.st-hatena.com/?url=' + data.url,
-    width  : 18,
-    height : 18,
-    top: 0,
-    left: 0
-  });
-  */
   
   var url = Titanium.UI.createLabel({
     text     : data.url,
     textAlign: 'left',
     height   : 14,
-    left     : 2,
+    top      : 0,
+    left     : 20,
+    bottom   : 2,
     color    : '#999',
-    font     : { fontSize: 11 }
+    font     : { fontSize: 12 }
   });
-      
+
+  view.add(icon);
   view.add(title);
-  /* view.add(icon); */
   view.add(url);
   row.add(view);
   
@@ -136,6 +140,15 @@ function openWebWindow (row) {
     systemButton : Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE
   });
 
+  var bookmark = Ti.UI.createButton({
+    title : 'B',
+    style : Ti.UI.iPhone.SystemButtonStyle.DONE,
+    font  : { fontFamily: 'Arial', fontWeight: 'bold' }
+  });
+  bookmark.addEventListener('click', function (e) {
+    displayBookmarks(row);
+  });
+
   var facebook = Ti.UI.createButton({
     title : 'Facebook',
     style: Ti.UI.iPhone.SystemButtonStyle.DONE,
@@ -147,7 +160,7 @@ function openWebWindow (row) {
       var login = Titanium.Facebook.createLoginButton({
 	      'style':'normal',
 	      'apikey':'9494e611f2a93b8d7bfcdfa8cefdaf9f',
-	      'sessionProxy':'http://api.appcelerator.net/p/fbconnect/',
+	      'sessionProxy':'http://api.appcelerator.net/p/fbconnect/'
       });
       var v = Ti.UI.createView({
         width: 200,
@@ -167,10 +180,71 @@ function openWebWindow (row) {
   
   win.title   = row.title;
   webview.url = row.url;
-  win.toolbar = [ back, reload, spacer, facebook ];
+  win.toolbar = [ back, reload, spacer, facebook, bookmark ];
   win.add(webview);
 
   nav.open(win, {animated : true});
+}
+
+function displayBookmarks(row) {
+  var win = Ti.UI.createWindow({
+    modal : true,
+    title : 'はてなブックマーク',
+    backgroundColor: '#fff'
+  });
+  var close = Ti.UI.createButton({
+    systemButton : Ti.UI.iPhone.SystemButton.DONE
+  });
+  close.addEventListener('click', function (e) { win.close(); });
+  win.rightNavButton = close;
+  win.open();
+  
+  Bookmark.find(row.url, function (entry) {
+    var rows = entry.bookmarks.map(function (b) {
+      var row  = Ti.UI.createTableViewRow({ height : 'auto' });
+      var view = Ti.UI.createView({ height: 'auto', layout: 'vertical', top:5, left:5, bottom:5, right:5 });
+      
+      var icon = Ti.UI.createImageView({
+        image: 'http://www.st-hatena.com/users/' + b.user.substring(0, 2) + '/' + b.user + '/profile.gif',
+        height: 32,
+        width: 32,
+        top: 0,
+        left: 0,
+        bottom: 10
+      });
+      view.add(icon);
+      
+      var user = Ti.UI.createLabel({
+        text : b.user,
+        height: 20,
+        color: '#000',
+        left: 45,
+        top: -42,
+        bottom: 2,
+        textAlign: 'left',
+        font : { fontSize: 14, fontWeight: 'bold' }
+      });
+      view.add(user);
+
+      var comment = Ti.UI.createLabel({
+        text : b.comment,
+        // height: 'auto',
+        height: 30,
+        color: '#666',
+        top: 0,
+        left : 45,
+        bottom: 2,
+        font : { fontSize: 12 }
+      });
+      view.add(comment);
+
+      row.add(view);
+      return row;
+    });
+    
+    var tableView = Ti.UI.createTableView({ data : rows });
+    win.add(tableView);
+  });
 }
 
 function facebookConnect (row) {
